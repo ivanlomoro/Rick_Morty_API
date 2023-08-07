@@ -136,16 +136,81 @@ function createCharacterCard(character: Character, parentDiv: HTMLElement): void
     cardTextSpecies.textContent = `Species: ${character.species}`;
     cardBody.appendChild(cardTextSpecies);
 
-    const viewLocationButton = document.createElement('button');
-    viewLocationButton.textContent = 'View Location';
-    viewLocationButton.addEventListener('click', () => {
-        renderLocation(character.location.url);
-    });
-    cardBody.appendChild(viewLocationButton);
+    characterDiv.appendChild(card); // Agregar la tarjeta al characterDiv
 
-    characterDiv.appendChild(card);
+    characterDiv.addEventListener('click', () => {
+        showCharacterDetailsModal(character);
+    });
+
     parentDiv.appendChild(characterDiv);
 }
+
+
+function showModal(id: string): void {
+    const modal = document.getElementById(id);
+    if (modal) {
+      modal.style.display = 'block';
+      modal.classList.add('show');
+    }
+  }
+  
+  function hideModal(id: string): void {
+    const modal = document.getElementById(id);
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.remove('show');
+    }
+  }
+
+  function showCharacterDetailsModal(character: Character): void {
+    const modalBody = document.getElementById('characterModalBody');
+
+    if (modalBody) {
+        modalBody.innerHTML = ''; // Limpiar el contenido del modal
+
+        const name = document.createElement('h5');
+        name.textContent = character.name;
+        modalBody.appendChild(name);
+
+        const image = document.createElement('img');
+        image.src = character.image;
+        image.alt = character.name;
+        modalBody.appendChild(image);
+
+        const status = document.createElement('p');
+        status.textContent = `Status: ${character.status}`;
+        modalBody.appendChild(status);
+
+        const species = document.createElement('p');
+        species.textContent = `Species: ${character.species}`;
+        modalBody.appendChild(species);
+
+        const gender = document.createElement('p');
+        gender.textContent = `Gender: ${character.gender}`;
+        modalBody.appendChild(gender);
+
+        const origin = document.createElement('p');
+        origin.textContent = `Origin: ${character.origin.name}`;
+        modalBody.appendChild(origin);
+
+        const viewLocationButton = document.createElement('button');
+        viewLocationButton.textContent = 'View Location';
+        viewLocationButton.className = 'btn btn-primary'; // puedes ajustar la clase CSS como desees
+        viewLocationButton.addEventListener('click', () => {
+            hideModal('characterModal');
+            renderLocation(character.location.url);
+        });
+
+        modalBody.appendChild(viewLocationButton);
+
+        // Mostrar el modal
+        showModal('characterModal');
+    }
+}
+    document.querySelector('#characterModal .btn-close')?.addEventListener('click', () => {
+    hideModal('characterModal');
+  });
+
 
 async function renderLocation(url: string): Promise<void> {
     const mainContent = document.getElementById('mainContent');
