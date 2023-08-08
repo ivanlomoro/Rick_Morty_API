@@ -20,6 +20,13 @@ async function loadLocation(url: string): Promise<Location> {
     return data as Location;
 }
 
+function scrollToTopSmoothly(): void {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
+
 function renderEpisodes(episodes: Episode[]): void {
     const episodeList = document.getElementById('episodeList');
     episodes.forEach(episode => {
@@ -96,10 +103,7 @@ async function renderEpisodeDetail(episode: Episode, characterPage: number = 1):
             mainContent.appendChild(buttonContainer);
         }
 
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-          });
+        scrollToTopSmoothly();
     }
 }
 
@@ -162,11 +166,11 @@ function showModal(id: string): void {
     }
   }
 
-  function showCharacterDetailsModal(character: Character): void {
+  function showCharacterDetailsModal(character: Character, showLocationButton: boolean = true): void {
     const modalBody = document.getElementById('characterModalBody');
 
     if (modalBody) {
-        modalBody.innerHTML = ''; // Limpiar el contenido del modal
+        modalBody.textContent = ''; 
 
         const name = document.createElement('h5');
         name.textContent = character.name;
@@ -193,15 +197,16 @@ function showModal(id: string): void {
         origin.textContent = `Origin: ${character.origin.name}`;
         modalBody.appendChild(origin);
 
-        const viewLocationButton = document.createElement('button');
-        viewLocationButton.textContent = 'View Location';
-        viewLocationButton.className = 'btn btn-primary'; // puedes ajustar la clase CSS como desees
-        viewLocationButton.addEventListener('click', () => {
-            hideModal('characterModal');
-            renderLocation(character.location.url);
-        });
-
-        modalBody.appendChild(viewLocationButton);
+        if (showLocationButton) {
+            const viewLocationButton = document.createElement('button');
+            viewLocationButton.textContent = 'View Location';
+            viewLocationButton.className = 'btn btn-primary'; // puedes ajustar la clase CSS como desees
+            viewLocationButton.addEventListener('click', () => {
+                hideModal('characterModal');
+                renderLocation(character.location.url);
+            });
+            modalBody.appendChild(viewLocationButton);
+        }
 
         // Mostrar el modal
         showModal('characterModal');
@@ -212,13 +217,13 @@ function showModal(id: string): void {
   });
 
 
-async function renderLocation(url: string): Promise<void> {
+  async function renderLocation(url: string): Promise<void> {
     const mainContent = document.getElementById('mainContent');
     if (mainContent) {
         const location = await loadLocation(url);
         mainContent.textContent = '';
 
-        const header = document.createElement('h3');
+        const header = document.createElement('h2');
         header.textContent = location.name;
         mainContent.appendChild(header);
 
@@ -230,16 +235,31 @@ async function renderLocation(url: string): Promise<void> {
         dimension.textContent = `Dimension: ${location.dimension}`;
         mainContent.appendChild(dimension);
 
+        const tittleResidents = document.createElement('h4');
+        tittleResidents.textContent = `Residents:`;
+        mainContent.appendChild(tittleResidents);
+
         const residentsList = document.createElement('ul');
         residentsList.className = 'list-unstyled';
-        location.residents.forEach(resident => {
+        mainContent.appendChild(residentsList);
+
+        location.residents.forEach(async residentUrl => {
+            const resident = await loadCharacter(residentUrl);
             const li = document.createElement('li');
-            li.textContent = resident;
+            const a = document.createElement('a');
+            a.href = '#'; // Make the link do nothing when clicked
+            a.textContent = resident.name;
+            a.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent the link from following the href
+                showCharacterDetailsModal(resident, false);
+            });
+            li.appendChild(a);
             residentsList.appendChild(li);
         });
-        mainContent.appendChild(residentsList);
+        scrollToTopSmoothly();
     }
 }
+
 
 const loadMoreButton = document.getElementById('loadMoreButton');
 if (loadMoreButton) {

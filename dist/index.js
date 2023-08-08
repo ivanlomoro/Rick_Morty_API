@@ -30,6 +30,12 @@ function loadLocation(url) {
         return data;
     });
 }
+function scrollToTopSmoothly() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
 function renderEpisodes(episodes) {
     const episodeList = document.getElementById('episodeList');
     episodes.forEach(episode => {
@@ -94,10 +100,7 @@ function renderEpisodeDetail(episode, characterPage = 1) {
             if (mainContent) {
                 mainContent.appendChild(buttonContainer);
             }
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
+            scrollToTopSmoothly();
         }
     });
 }
@@ -146,10 +149,10 @@ function hideModal(id) {
         modal.classList.remove('show');
     }
 }
-function showCharacterDetailsModal(character) {
+function showCharacterDetailsModal(character, showLocationButton = true) {
     const modalBody = document.getElementById('characterModalBody');
     if (modalBody) {
-        modalBody.innerHTML = '';
+        modalBody.textContent = '';
         const name = document.createElement('h5');
         name.textContent = character.name;
         modalBody.appendChild(name);
@@ -169,14 +172,16 @@ function showCharacterDetailsModal(character) {
         const origin = document.createElement('p');
         origin.textContent = `Origin: ${character.origin.name}`;
         modalBody.appendChild(origin);
-        const viewLocationButton = document.createElement('button');
-        viewLocationButton.textContent = 'View Location';
-        viewLocationButton.className = 'btn btn-primary';
-        viewLocationButton.addEventListener('click', () => {
-            hideModal('characterModal');
-            renderLocation(character.location.url);
-        });
-        modalBody.appendChild(viewLocationButton);
+        if (showLocationButton) {
+            const viewLocationButton = document.createElement('button');
+            viewLocationButton.textContent = 'View Location';
+            viewLocationButton.className = 'btn btn-primary';
+            viewLocationButton.addEventListener('click', () => {
+                hideModal('characterModal');
+                renderLocation(character.location.url);
+            });
+            modalBody.appendChild(viewLocationButton);
+        }
         showModal('characterModal');
     }
 }
@@ -189,7 +194,7 @@ function renderLocation(url) {
         if (mainContent) {
             const location = yield loadLocation(url);
             mainContent.textContent = '';
-            const header = document.createElement('h3');
+            const header = document.createElement('h2');
             header.textContent = location.name;
             mainContent.appendChild(header);
             const type = document.createElement('p');
@@ -198,14 +203,26 @@ function renderLocation(url) {
             const dimension = document.createElement('p');
             dimension.textContent = `Dimension: ${location.dimension}`;
             mainContent.appendChild(dimension);
+            const tittleResidents = document.createElement('h4');
+            tittleResidents.textContent = `Residents:`;
+            mainContent.appendChild(tittleResidents);
             const residentsList = document.createElement('ul');
             residentsList.className = 'list-unstyled';
-            location.residents.forEach(resident => {
-                const li = document.createElement('li');
-                li.textContent = resident;
-                residentsList.appendChild(li);
-            });
             mainContent.appendChild(residentsList);
+            location.residents.forEach((residentUrl) => __awaiter(this, void 0, void 0, function* () {
+                const resident = yield loadCharacter(residentUrl);
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = '#';
+                a.textContent = resident.name;
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showCharacterDetailsModal(resident, false);
+                });
+                li.appendChild(a);
+                residentsList.appendChild(li);
+            }));
+            scrollToTopSmoothly();
         }
     });
 }
