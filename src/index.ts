@@ -47,6 +47,7 @@ async function renderEpisodeDetail(episode: Episode, characterPage: number = 1):
 
     if(mainContent) {
         mainContent.textContent = '';
+        mainContent.style.background = 'none';
         mainContent.className = 'd-flex flex-column align-items-md-start align-items-center';
         const title = document.createElement('h2');
         title.textContent = episode.name;
@@ -269,6 +270,13 @@ if (loadMoreButton) {
         loadEpisodes(currentPage).then(renderEpisodes);
     });
 }
+
+const headerVideo = document.getElementById('headerVideo') as HTMLVideoElement;
+
+headerVideo.addEventListener('click', () => {
+    window.location.href = 'index.html';
+});
+
 
 // load initial set of episodes
 loadEpisodes(currentPage).then(renderEpisodes);

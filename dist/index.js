@@ -53,6 +53,7 @@ function renderEpisodeDetail(episode, characterPage = 1) {
         const charactersPerPage = 8;
         if (mainContent) {
             mainContent.textContent = '';
+            mainContent.style.background = 'none';
             mainContent.className = 'd-flex flex-column align-items-md-start align-items-center';
             const title = document.createElement('h2');
             title.textContent = episode.name;
@@ -231,6 +232,10 @@ if (loadMoreButton) {
         loadEpisodes(currentPage).then(renderEpisodes);
     });
 }
+const headerVideo = document.getElementById('headerVideo');
+headerVideo.addEventListener('click', () => {
+    window.location.href = 'index.html';
+});
 loadEpisodes(currentPage).then(renderEpisodes);
 export {};
 //# sourceMappingURL=index.js.map
