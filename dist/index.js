@@ -136,29 +136,27 @@ function createCharacterCard(character, parentDiv) {
     parentDiv.appendChild(characterDiv);
 }
 function showModal(id) {
-    const modal = document.getElementById(id);
-    if (modal) {
-        modal.style.display = 'block';
-        modal.classList.add('show');
-    }
+    const modal = new bootstrap.Modal(document.getElementById(id), {
+        keyboard: false
+    });
+    modal.show();
 }
 function hideModal(id) {
-    const modal = document.getElementById(id);
-    if (modal) {
-        modal.style.display = 'none';
-        modal.classList.remove('show');
-    }
+    const modal = bootstrap.Modal.getInstance(document.getElementById(id));
+    modal.hide();
 }
 function showCharacterDetailsModal(character, showLocationButton = true) {
     const modalBody = document.getElementById('characterModalBody');
     if (modalBody) {
         modalBody.textContent = '';
+        modalBody.className = 'text-center';
         const name = document.createElement('h5');
         name.textContent = character.name;
         modalBody.appendChild(name);
         const image = document.createElement('img');
         image.src = character.image;
         image.alt = character.name;
+        image.className = 'mx-auto d-block';
         modalBody.appendChild(image);
         const status = document.createElement('p');
         status.textContent = `Status: ${character.status}`;
@@ -175,7 +173,7 @@ function showCharacterDetailsModal(character, showLocationButton = true) {
         if (showLocationButton) {
             const viewLocationButton = document.createElement('button');
             viewLocationButton.textContent = 'View Location';
-            viewLocationButton.className = 'btn btn-primary';
+            viewLocationButton.className = 'btn btn-primary d-block mx-auto';
             viewLocationButton.addEventListener('click', () => {
                 hideModal('characterModal');
                 renderLocation(character.location.url);

@@ -1,4 +1,5 @@
 import { Episode, Character, Location } from './types/interfaces';
+declare var bootstrap: any;
 
 let currentPage = 1;
 
@@ -19,6 +20,7 @@ async function loadLocation(url: string): Promise<Location> {
     const data = await response.json();
     return data as Location;
 }
+
 
 function scrollToTopSmoothly(): void {
     window.scrollTo({
@@ -151,26 +153,24 @@ function createCharacterCard(character: Character, parentDiv: HTMLElement): void
 
 
 function showModal(id: string): void {
-    const modal = document.getElementById(id);
-    if (modal) {
-      modal.style.display = 'block';
-      modal.classList.add('show');
-    }
+    const modal = new bootstrap.Modal(document.getElementById(id), {
+      keyboard: false
+    });
+    modal.show();
   }
   
   function hideModal(id: string): void {
-    const modal = document.getElementById(id);
-    if (modal) {
-      modal.style.display = 'none';
-      modal.classList.remove('show');
-    }
+    const modal = bootstrap.Modal.getInstance(document.getElementById(id));
+    modal.hide();
   }
+  
 
   function showCharacterDetailsModal(character: Character, showLocationButton: boolean = true): void {
     const modalBody = document.getElementById('characterModalBody');
 
     if (modalBody) {
-        modalBody.textContent = ''; 
+        modalBody.textContent = '';
+        modalBody.className = 'text-center'; 
 
         const name = document.createElement('h5');
         name.textContent = character.name;
@@ -179,6 +179,7 @@ function showModal(id: string): void {
         const image = document.createElement('img');
         image.src = character.image;
         image.alt = character.name;
+        image.className = 'mx-auto d-block';
         modalBody.appendChild(image);
 
         const status = document.createElement('p');
@@ -200,7 +201,7 @@ function showModal(id: string): void {
         if (showLocationButton) {
             const viewLocationButton = document.createElement('button');
             viewLocationButton.textContent = 'View Location';
-            viewLocationButton.className = 'btn btn-primary'; // puedes ajustar la clase CSS como desees
+            viewLocationButton.className = 'btn btn-primary d-block mx-auto'; 
             viewLocationButton.addEventListener('click', () => {
                 hideModal('characterModal');
                 renderLocation(character.location.url);
