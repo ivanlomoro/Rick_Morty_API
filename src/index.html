@@ -11,7 +11,7 @@
     <header class="bg-black text-center position-relative overflow-hidden d-flex align-items-center justify-content-center custom-header">
         <video id="headerVideo" autoplay muted class="position-absolute w-100 h-100">
             <source src="/assets/intro_v2.mp4" type="video/mp4">
-            Tu navegador no soporta el elemento de video.
+            Your browser does not support the video element.
         </video>
     </header>      
     <div class="container-fluid mt-4">
@@ -45,7 +45,23 @@
             </div>
           </div>
         </div>
-      </div>           
+      </div>
+      <div class="modal fade" id="episodesModal" tabindex="-1" aria-labelledby="episodesModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="episodesModalLabel">Episodes in which appears</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="episodesModalBody">
+              <!-- Lista de episodios aquí -->
+              <ul id="episodesList" class="list-unstyled">
+                <!-- Los episodios se añadirán aquí mediante JavaScript -->
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>                      
       <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script>
     <script type="module" src="../dist/index.js"></script>

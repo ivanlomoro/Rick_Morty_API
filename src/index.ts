@@ -21,6 +21,12 @@ async function loadLocation(url: string): Promise<Location> {
     return data as Location;
 }
 
+async function loadEpisodeByUrl(url: string): Promise<Episode> {
+    const response = await fetch(url);
+    const data = await response.json();
+    return data as Episode;
+}
+
 
 function scrollToTopSmoothly(): void {
     window.scrollTo({
@@ -80,7 +86,17 @@ async function renderEpisodeDetail(episode: Episode, characterPage: number = 1):
         for (let characterUrl of characterSlice) {
             const character = await loadCharacter(characterUrl);
             createCharacterCard(character, rowDiv);
-        }       
+        }
+        
+        if (characterPage > 1) {
+            const previousPageButton = document.createElement('button');
+            previousPageButton.className = 'btn btn-warning mb-3 mx-1';
+            previousPageButton.textContent = 'Previous Page';
+            previousPageButton.addEventListener('click', () => {
+                renderEpisodeDetail(episode, characterPage - 1);
+            });
+            buttonContainer.appendChild(previousPageButton);
+        }
 
         if (end < episode.characters.length) {
             const loadMoreCharactersButton = document.createElement('button');
@@ -92,22 +108,37 @@ async function renderEpisodeDetail(episode: Episode, characterPage: number = 1):
             buttonContainer.appendChild(loadMoreCharactersButton);
         }
 
-        if (characterPage > 1) {
-            const previousPageButton = document.createElement('button');
-            previousPageButton.className = 'btn btn-secondary mb-3 mx-1';
-            previousPageButton.textContent = 'Previous Page';
-            previousPageButton.addEventListener('click', () => {
-                renderEpisodeDetail(episode, characterPage - 1);
-            });
-            buttonContainer.appendChild(previousPageButton);
-        }
-    
         if(mainContent) {
             mainContent.appendChild(buttonContainer);
         }
 
         scrollToTopSmoothly();
     }
+}
+
+async function showEpisodesModal(character: Character): Promise<void> {
+    const episodesList = document.getElementById('episodesList');
+
+    if (episodesList) {
+        episodesList.textContent = '';
+
+        for (const episodeUrl of character.episode) { 
+            const episode = await loadEpisodeByUrl(episodeUrl);
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = '#';
+            a.textContent = `${episode.name} - ${episode.episode}`;
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
+                hideModal('episodesModal'); 
+                renderEpisodeDetail(episode); // Renderiza el detalle del episodio
+            });
+            li.appendChild(a);
+            episodesList.appendChild(li);
+        }
+    }
+
+    showModal('episodesModal'); 
 }
 
 
@@ -143,7 +174,17 @@ function createCharacterCard(character: Character, parentDiv: HTMLElement): void
     cardTextSpecies.textContent = `Species: ${character.species}`;
     cardBody.appendChild(cardTextSpecies);
 
-    characterDiv.appendChild(card); // Agregar la tarjeta al characterDiv
+    const episodesButton = document.createElement('button');
+    episodesButton.textContent = 'Episodes in which appears';
+    episodesButton.className = 'btn btn-secondary d-block mx-auto'; 
+    episodesButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showEpisodesModal(character);
+    });
+    cardBody.appendChild(episodesButton);
+    
+
+    characterDiv.appendChild(card); 
 
     characterDiv.addEventListener('click', () => {
         showCharacterDetailsModal(character);
@@ -210,7 +251,6 @@ function showModal(id: string): void {
             modalBody.appendChild(viewLocationButton);
         }
 
-        // Mostrar el modal
         showModal('characterModal');
     }
 }
@@ -249,7 +289,7 @@ function showModal(id: string): void {
             const resident = await loadCharacter(residentUrl);
             const li = document.createElement('li');
             const a = document.createElement('a');
-            a.href = '#'; // Make the link do nothing when clicked
+            a.href = '#'; 
             a.textContent = resident.name;
             a.addEventListener('click', (e) => {
                 e.preventDefault(); // Prevent the link from following the href

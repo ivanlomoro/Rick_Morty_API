@@ -14,12 +14,35 @@
     padding-bottom: 5rem;
 }
 
-
-.character-card {
+.card {
     opacity: 0;
     transform: translateY(20px);
     animation: load 1s ease-out forwards;
     cursor: pointer; 
+}
+
+.list-group-item {
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    border: 1px solid #8BDC98;
+    letter-spacing: 2px;
+    font-size: 16px;
+}
+
+.list-group-item:hover {
+    background-color: #afafaf;
+    color: rgb(255, 255, 255);
+    animation: bounce 0.5s ease infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
 }
 
 @keyframes load {

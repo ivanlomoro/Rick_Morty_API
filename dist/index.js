@@ -30,6 +30,13 @@ function loadLocation(url) {
         return data;
     });
 }
+function loadEpisodeByUrl(url) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const response = yield fetch(url);
+        const data = yield response.json();
+        return data;
+    });
+}
 function scrollToTopSmoothly() {
     window.scrollTo({
         top: 0,
@@ -80,6 +87,15 @@ function renderEpisodeDetail(episode, characterPage = 1) {
                 const character = yield loadCharacter(characterUrl);
                 createCharacterCard(character, rowDiv);
             }
+            if (characterPage > 1) {
+                const previousPageButton = document.createElement('button');
+                previousPageButton.className = 'btn btn-warning mb-3 mx-1';
+                previousPageButton.textContent = 'Previous Page';
+                previousPageButton.addEventListener('click', () => {
+                    renderEpisodeDetail(episode, characterPage - 1);
+                });
+                buttonContainer.appendChild(previousPageButton);
+            }
             if (end < episode.characters.length) {
                 const loadMoreCharactersButton = document.createElement('button');
                 loadMoreCharactersButton.className = 'btn btn-primary mb-3 mx-1';
@@ -89,20 +105,34 @@ function renderEpisodeDetail(episode, characterPage = 1) {
                 });
                 buttonContainer.appendChild(loadMoreCharactersButton);
             }
-            if (characterPage > 1) {
-                const previousPageButton = document.createElement('button');
-                previousPageButton.className = 'btn btn-secondary mb-3 mx-1';
-                previousPageButton.textContent = 'Previous Page';
-                previousPageButton.addEventListener('click', () => {
-                    renderEpisodeDetail(episode, characterPage - 1);
-                });
-                buttonContainer.appendChild(previousPageButton);
-            }
             if (mainContent) {
                 mainContent.appendChild(buttonContainer);
             }
             scrollToTopSmoothly();
         }
+    });
+}
+function showEpisodesModal(character) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const episodesList = document.getElementById('episodesList');
+        if (episodesList) {
+            episodesList.textContent = '';
+            for (const episodeUrl of character.episode) {
+                const episode = yield loadEpisodeByUrl(episodeUrl);
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = '#';
+                a.textContent = `${episode.name} - ${episode.episode}`;
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    hideModal('episodesModal');
+                    renderEpisodeDetail(episode);
+                });
+                li.appendChild(a);
+                episodesList.appendChild(li);
+            }
+        }
+        showModal('episodesModal');
     });
 }
 function createCharacterCard(character, parentDiv) {
@@ -130,6 +160,14 @@ function createCharacterCard(character, parentDiv) {
     cardTextSpecies.className = 'card-text';
     cardTextSpecies.textContent = `Species: ${character.species}`;
     cardBody.appendChild(cardTextSpecies);
+    const episodesButton = document.createElement('button');
+    episodesButton.textContent = 'Episodes in which appears';
+    episodesButton.className = 'btn btn-secondary d-block mx-auto';
+    episodesButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showEpisodesModal(character);
+    });
+    cardBody.appendChild(episodesButton);
     characterDiv.appendChild(card);
     characterDiv.addEventListener('click', () => {
         showCharacterDetailsModal(character);
