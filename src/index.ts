@@ -30,10 +30,17 @@ async function loadEpisodeByUrl(url: string): Promise<Episode> {
 
 function scrollToTopSmoothly(): void {
     window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
+        top: 0,
+        behavior: 'smooth'
     });
-  }
+}
+
+function scrollToBottomSmoothly(): void {
+    window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: 'smooth'
+    });
+}
 
 function renderEpisodes(episodes: Episode[]): void {
     const episodeList = document.getElementById('episodeList');
@@ -49,9 +56,11 @@ function renderEpisodes(episodes: Episode[]): void {
 async function renderEpisodeDetail(episode: Episode, characterPage: number = 1): Promise<void> {
     const mainContent = document.getElementById('mainContent');
     const charactersPerPage = 8;
+    const totalPages = Math.ceil(episode.characters.length / charactersPerPage);
 
 
-    if(mainContent) {
+
+    if (mainContent) {
         mainContent.textContent = '';
         mainContent.style.background = 'none';
         mainContent.className = 'd-flex flex-column align-items-md-start align-items-center';
@@ -59,23 +68,23 @@ async function renderEpisodeDetail(episode: Episode, characterPage: number = 1):
         title.textContent = episode.name;
         title.className = 'text-center text-md-start';
         mainContent.appendChild(title);
-        
+
         const airDate = document.createElement('p');
         airDate.textContent = `Air Date: ${episode.air_date}`;
         airDate.className = 'text-center text-md-start';
         mainContent.appendChild(airDate);
-        
+
         const episodeCode = document.createElement('p');
         episodeCode.textContent = `Episode: ${episode.episode}`;
         episodeCode.className = 'text-center text-md-start';
-        mainContent.appendChild(episodeCode);    
-        
+        mainContent.appendChild(episodeCode);
+
         const rowDiv = document.createElement('div');
         rowDiv.className = 'row d-flex justify-content-center justify-content-md-center';
         mainContent.appendChild(rowDiv);
-        
+
         const buttonContainer = document.createElement('div');
-        buttonContainer.className = 'text-center'; 
+        buttonContainer.className = 'text-center';
         mainContent.appendChild(buttonContainer);
 
         const start = (characterPage - 1) * charactersPerPage;
@@ -87,7 +96,11 @@ async function renderEpisodeDetail(episode: Episode, characterPage: number = 1):
             const character = await loadCharacter(characterUrl);
             createCharacterCard(character, rowDiv);
         }
-        
+
+        const paginationContainer = document.createElement('div');
+        paginationContainer.className = 'd-flex justify-content-center align-items-center';
+        mainContent.appendChild(paginationContainer);
+
         if (characterPage > 1) {
             const previousPageButton = document.createElement('button');
             previousPageButton.className = 'btn btn-warning mb-3 mx-1';
@@ -95,26 +108,36 @@ async function renderEpisodeDetail(episode: Episode, characterPage: number = 1):
             previousPageButton.addEventListener('click', () => {
                 renderEpisodeDetail(episode, characterPage - 1);
             });
-            buttonContainer.appendChild(previousPageButton);
+            paginationContainer.appendChild(previousPageButton);
         }
 
-        if (end < episode.characters.length) {
+        if (characterPage < totalPages) {
             const loadMoreCharactersButton = document.createElement('button');
             loadMoreCharactersButton.className = 'btn btn-primary mb-3 mx-1';
             loadMoreCharactersButton.textContent = 'Load More Characters';
             loadMoreCharactersButton.addEventListener('click', () => {
                 renderEpisodeDetail(episode, characterPage + 1);
             });
-            buttonContainer.appendChild(loadMoreCharactersButton);
+            paginationContainer.appendChild(loadMoreCharactersButton);
         }
 
-        if(mainContent) {
-            mainContent.appendChild(buttonContainer);
-        }
+        // Indicador de página
+        const pageIndicator = document.createElement('span');
+        pageIndicator.className = 'mx-3 mb-3';
+        pageIndicator.textContent = `${characterPage} / ${totalPages}`;
+        paginationContainer.appendChild(pageIndicator);
 
         scrollToTopSmoothly();
     }
+
+    if (window.innerWidth <= 768) {
+        const mainContent = document.getElementById('mainContent');
+        if (mainContent) {
+            mainContent.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
 }
+
 
 async function showEpisodesModal(character: Character): Promise<void> {
     const episodesList = document.getElementById('episodesList');
@@ -122,7 +145,7 @@ async function showEpisodesModal(character: Character): Promise<void> {
     if (episodesList) {
         episodesList.textContent = '';
 
-        for (const episodeUrl of character.episode) { 
+        for (const episodeUrl of character.episode) {
             const episode = await loadEpisodeByUrl(episodeUrl);
             const li = document.createElement('li');
             const a = document.createElement('a');
@@ -130,7 +153,7 @@ async function showEpisodesModal(character: Character): Promise<void> {
             a.textContent = `${episode.name} - ${episode.episode}`;
             a.addEventListener('click', (e) => {
                 e.preventDefault();
-                hideModal('episodesModal'); 
+                hideModal('episodesModal');
                 renderEpisodeDetail(episode); // Renderiza el detalle del episodio
             });
             li.appendChild(a);
@@ -138,7 +161,7 @@ async function showEpisodesModal(character: Character): Promise<void> {
         }
     }
 
-    showModal('episodesModal'); 
+    showModal('episodesModal');
 }
 
 
@@ -176,15 +199,15 @@ function createCharacterCard(character: Character, parentDiv: HTMLElement): void
 
     const episodesButton = document.createElement('button');
     episodesButton.textContent = 'Episodes in which appears';
-    episodesButton.className = 'btn btn-secondary d-block mx-auto'; 
+    episodesButton.className = 'btn btn-secondary d-block mx-auto';
     episodesButton.addEventListener('click', (e) => {
         e.stopPropagation();
         showEpisodesModal(character);
     });
     cardBody.appendChild(episodesButton);
-    
 
-    characterDiv.appendChild(card); 
+
+    characterDiv.appendChild(card);
 
     characterDiv.addEventListener('click', () => {
         showCharacterDetailsModal(character);
@@ -196,23 +219,23 @@ function createCharacterCard(character: Character, parentDiv: HTMLElement): void
 
 function showModal(id: string): void {
     const modal = new bootstrap.Modal(document.getElementById(id), {
-      keyboard: false
+        keyboard: false
     });
     modal.show();
-  }
-  
-  function hideModal(id: string): void {
+}
+
+function hideModal(id: string): void {
     const modal = bootstrap.Modal.getInstance(document.getElementById(id));
     modal.hide();
-  }
-  
+}
 
-  function showCharacterDetailsModal(character: Character, showLocationButton: boolean = true): void {
+
+function showCharacterDetailsModal(character: Character, showLocationButton: boolean = true): void {
     const modalBody = document.getElementById('characterModalBody');
 
     if (modalBody) {
         modalBody.textContent = '';
-        modalBody.className = 'text-center'; 
+        modalBody.className = 'text-center';
 
         const name = document.createElement('h5');
         name.textContent = character.name;
@@ -243,7 +266,7 @@ function showModal(id: string): void {
         if (showLocationButton) {
             const viewLocationButton = document.createElement('button');
             viewLocationButton.textContent = 'View Location';
-            viewLocationButton.className = 'btn btn-primary d-block mx-auto'; 
+            viewLocationButton.className = 'btn btn-primary d-block mx-auto';
             viewLocationButton.addEventListener('click', () => {
                 hideModal('characterModal');
                 renderLocation(character.location.url);
@@ -254,12 +277,12 @@ function showModal(id: string): void {
         showModal('characterModal');
     }
 }
-    document.querySelector('#characterModal .btn-close')?.addEventListener('click', () => {
+document.querySelector('#characterModal .btn-close')?.addEventListener('click', () => {
     hideModal('characterModal');
-  });
+});
 
 
-  async function renderLocation(url: string): Promise<void> {
+async function renderLocation(url: string): Promise<void> {
     const mainContent = document.getElementById('mainContent');
     if (mainContent) {
         const location = await loadLocation(url);
@@ -289,7 +312,7 @@ function showModal(id: string): void {
             const resident = await loadCharacter(residentUrl);
             const li = document.createElement('li');
             const a = document.createElement('a');
-            a.href = '#'; 
+            a.href = '#';
             a.textContent = resident.name;
             a.addEventListener('click', (e) => {
                 e.preventDefault(); // Prevent the link from following the href
@@ -307,9 +330,13 @@ const loadMoreButton = document.getElementById('loadMoreButton');
 if (loadMoreButton) {
     loadMoreButton.addEventListener('click', () => {
         currentPage++;
-        loadEpisodes(currentPage).then(renderEpisodes);
+        loadEpisodes(currentPage).then(newEpisodes => {
+            renderEpisodes(newEpisodes);
+            scrollToBottomSmoothly();
+        });
     });
 }
+
 
 const headerVideo = document.getElementById('headerVideo') as HTMLVideoElement;
 

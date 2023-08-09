@@ -43,6 +43,12 @@ function scrollToTopSmoothly() {
         behavior: 'smooth'
     });
 }
+function scrollToBottomSmoothly() {
+    window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: 'smooth'
+    });
+}
 function renderEpisodes(episodes) {
     const episodeList = document.getElementById('episodeList');
     episodes.forEach(episode => {
@@ -58,6 +64,7 @@ function renderEpisodeDetail(episode, characterPage = 1) {
     return __awaiter(this, void 0, void 0, function* () {
         const mainContent = document.getElementById('mainContent');
         const charactersPerPage = 8;
+        const totalPages = Math.ceil(episode.characters.length / charactersPerPage);
         if (mainContent) {
             mainContent.textContent = '';
             mainContent.style.background = 'none';
@@ -87,6 +94,9 @@ function renderEpisodeDetail(episode, characterPage = 1) {
                 const character = yield loadCharacter(characterUrl);
                 createCharacterCard(character, rowDiv);
             }
+            const paginationContainer = document.createElement('div');
+            paginationContainer.className = 'd-flex justify-content-center align-items-center';
+            mainContent.appendChild(paginationContainer);
             if (characterPage > 1) {
                 const previousPageButton = document.createElement('button');
                 previousPageButton.className = 'btn btn-warning mb-3 mx-1';
@@ -94,21 +104,28 @@ function renderEpisodeDetail(episode, characterPage = 1) {
                 previousPageButton.addEventListener('click', () => {
                     renderEpisodeDetail(episode, characterPage - 1);
                 });
-                buttonContainer.appendChild(previousPageButton);
+                paginationContainer.appendChild(previousPageButton);
             }
-            if (end < episode.characters.length) {
+            if (characterPage < totalPages) {
                 const loadMoreCharactersButton = document.createElement('button');
                 loadMoreCharactersButton.className = 'btn btn-primary mb-3 mx-1';
                 loadMoreCharactersButton.textContent = 'Load More Characters';
                 loadMoreCharactersButton.addEventListener('click', () => {
                     renderEpisodeDetail(episode, characterPage + 1);
                 });
-                buttonContainer.appendChild(loadMoreCharactersButton);
+                paginationContainer.appendChild(loadMoreCharactersButton);
             }
-            if (mainContent) {
-                mainContent.appendChild(buttonContainer);
-            }
+            const pageIndicator = document.createElement('span');
+            pageIndicator.className = 'mx-3 mb-3';
+            pageIndicator.textContent = `${characterPage} / ${totalPages}`;
+            paginationContainer.appendChild(pageIndicator);
             scrollToTopSmoothly();
+        }
+        if (window.innerWidth <= 768) {
+            const mainContent = document.getElementById('mainContent');
+            if (mainContent) {
+                mainContent.scrollIntoView({ behavior: 'smooth' });
+            }
         }
     });
 }
@@ -267,7 +284,10 @@ const loadMoreButton = document.getElementById('loadMoreButton');
 if (loadMoreButton) {
     loadMoreButton.addEventListener('click', () => {
         currentPage++;
-        loadEpisodes(currentPage).then(renderEpisodes);
+        loadEpisodes(currentPage).then(newEpisodes => {
+            renderEpisodes(newEpisodes);
+            scrollToBottomSmoothly();
+        });
     });
 }
 const headerVideo = document.getElementById('headerVideo');
