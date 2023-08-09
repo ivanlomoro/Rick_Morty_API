@@ -42,14 +42,50 @@ function scrollToBottomSmoothly(): void {
     });
 }
 
+function createSeasonDiv(seasonNumber: string): HTMLDivElement {
+    const seasonDiv = document.createElement('div');
+    const seasonTitle = document.createElement('h3');
+    seasonDiv.classList.add('mb-3');
+    seasonTitle.textContent = `Season ${seasonNumber}`;
+    seasonDiv.appendChild(seasonTitle);
+    return seasonDiv;
+}
+
+function addEpisodeToList(seasonDiv: HTMLDivElement, episode: Episode): void {
+    const listItem = document.createElement('li');
+    listItem.classList.add('list-group-item');
+    listItem.textContent = `${episode.episode} - ${episode.name}`;
+    listItem.addEventListener('click', () => renderEpisodeDetail(episode));
+    seasonDiv.appendChild(listItem);
+}
+
 function renderEpisodes(episodes: Episode[]): void {
-    const episodeList = document.getElementById('episodeList');
+    const episodesBySeason: { [season: string]: Episode[] } = {};
+
+    
     episodes.forEach(episode => {
-        const listItem = document.createElement('li');
-        listItem.classList.add('list-group-item');
-        listItem.textContent = `${episode.episode} - ${episode.name}`;
-        listItem.addEventListener('click', () => renderEpisodeDetail(episode));
-        if (episodeList) episodeList.appendChild(listItem);
+        const seasonCode = episode.episode.substring(0, 3);
+        const seasonNumber = parseInt(seasonCode.substring(1), 10).toString();
+
+        if (!episodesBySeason[seasonNumber]) {
+            episodesBySeason[seasonNumber] = [];
+        }
+
+        episodesBySeason[seasonNumber].push(episode);
+    });
+
+    const episodeList = document.getElementById('episodeList');
+
+    Object.keys(episodesBySeason).forEach(seasonNumber => {
+        let seasonDiv = episodeList?.querySelector(`.season-${seasonNumber}`);
+        if (!seasonDiv) {
+            seasonDiv = createSeasonDiv(seasonNumber);
+            seasonDiv.classList.add(`season-${seasonNumber}`);
+            if (episodeList) episodeList.appendChild(seasonDiv);
+        }
+
+        const seasonEpisodes = episodesBySeason[seasonNumber];
+        seasonEpisodes.forEach(episode => addEpisodeToList(seasonDiv as HTMLDivElement, episode));
     });
 }
 
@@ -269,14 +305,21 @@ function showCharacterDetailsModal(character: Character, showLocationButton: boo
             viewLocationButton.className = 'btn btn-primary d-block mx-auto';
             viewLocationButton.addEventListener('click', () => {
                 hideModal('characterModal');
+                const mainContent = document.getElementById('mainContent');
+                if (mainContent) {
+                    mainContent.scrollIntoView({ behavior: 'smooth' });
+                }
                 renderLocation(character.location.url);
             });
             modalBody.appendChild(viewLocationButton);
         }
-
+    
         showModal('characterModal');
     }
 }
+console.log("View Location button clicked");
+console.log("Scrolling to mainContent");
+
 document.querySelector('#characterModal .btn-close')?.addEventListener('click', () => {
     hideModal('characterModal');
 });
@@ -328,14 +371,24 @@ async function renderLocation(url: string): Promise<void> {
 
 const loadMoreButton = document.getElementById('loadMoreButton');
 if (loadMoreButton) {
-    loadMoreButton.addEventListener('click', () => {
+    loadMoreButton.addEventListener('click', async () => {
         currentPage++;
-        loadEpisodes(currentPage).then(newEpisodes => {
-            renderEpisodes(newEpisodes);
-            scrollToBottomSmoothly();
-        });
+        const newEpisodes = await loadEpisodes(currentPage);
+        renderEpisodes(newEpisodes);
+
+        setTimeout(() => {
+            if (window.innerWidth > 768) {
+                scrollToBottomSmoothly(); 
+            } else {
+                const episodeContainer = document.getElementById('episodeList'); 
+                if (episodeContainer) {
+                    episodeContainer.scrollIntoView({ behavior: 'smooth', block: 'end' }); 
+                }
+            }
+        }, 100); 
     });
 }
+
 
 
 const headerVideo = document.getElementById('headerVideo') as HTMLVideoElement;

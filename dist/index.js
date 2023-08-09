@@ -49,15 +49,42 @@ function scrollToBottomSmoothly() {
         behavior: 'smooth'
     });
 }
+function createSeasonDiv(seasonNumber) {
+    const seasonDiv = document.createElement('div');
+    const seasonTitle = document.createElement('h3');
+    seasonDiv.classList.add('mb-3');
+    seasonTitle.textContent = `Season ${seasonNumber}`;
+    seasonDiv.appendChild(seasonTitle);
+    return seasonDiv;
+}
+function addEpisodeToList(seasonDiv, episode) {
+    const listItem = document.createElement('li');
+    listItem.classList.add('list-group-item');
+    listItem.textContent = `${episode.episode} - ${episode.name}`;
+    listItem.addEventListener('click', () => renderEpisodeDetail(episode));
+    seasonDiv.appendChild(listItem);
+}
 function renderEpisodes(episodes) {
-    const episodeList = document.getElementById('episodeList');
+    const episodesBySeason = {};
     episodes.forEach(episode => {
-        const listItem = document.createElement('li');
-        listItem.classList.add('list-group-item');
-        listItem.textContent = `${episode.episode} - ${episode.name}`;
-        listItem.addEventListener('click', () => renderEpisodeDetail(episode));
-        if (episodeList)
-            episodeList.appendChild(listItem);
+        const seasonCode = episode.episode.substring(0, 3);
+        const seasonNumber = parseInt(seasonCode.substring(1), 10).toString();
+        if (!episodesBySeason[seasonNumber]) {
+            episodesBySeason[seasonNumber] = [];
+        }
+        episodesBySeason[seasonNumber].push(episode);
+    });
+    const episodeList = document.getElementById('episodeList');
+    Object.keys(episodesBySeason).forEach(seasonNumber => {
+        let seasonDiv = episodeList === null || episodeList === void 0 ? void 0 : episodeList.querySelector(`.season-${seasonNumber}`);
+        if (!seasonDiv) {
+            seasonDiv = createSeasonDiv(seasonNumber);
+            seasonDiv.classList.add(`season-${seasonNumber}`);
+            if (episodeList)
+                episodeList.appendChild(seasonDiv);
+        }
+        const seasonEpisodes = episodesBySeason[seasonNumber];
+        seasonEpisodes.forEach(episode => addEpisodeToList(seasonDiv, episode));
     });
 }
 function renderEpisodeDetail(episode, characterPage = 1) {
@@ -232,6 +259,10 @@ function showCharacterDetailsModal(character, showLocationButton = true) {
             viewLocationButton.className = 'btn btn-primary d-block mx-auto';
             viewLocationButton.addEventListener('click', () => {
                 hideModal('characterModal');
+                const mainContent = document.getElementById('mainContent');
+                if (mainContent) {
+                    mainContent.scrollIntoView({ behavior: 'smooth' });
+                }
                 renderLocation(character.location.url);
             });
             modalBody.appendChild(viewLocationButton);
@@ -239,6 +270,8 @@ function showCharacterDetailsModal(character, showLocationButton = true) {
         showModal('characterModal');
     }
 }
+console.log("View Location button clicked");
+console.log("Scrolling to mainContent");
 (_a = document.querySelector('#characterModal .btn-close')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', () => {
     hideModal('characterModal');
 });
@@ -282,13 +315,22 @@ function renderLocation(url) {
 }
 const loadMoreButton = document.getElementById('loadMoreButton');
 if (loadMoreButton) {
-    loadMoreButton.addEventListener('click', () => {
+    loadMoreButton.addEventListener('click', () => __awaiter(void 0, void 0, void 0, function* () {
         currentPage++;
-        loadEpisodes(currentPage).then(newEpisodes => {
-            renderEpisodes(newEpisodes);
-            scrollToBottomSmoothly();
-        });
-    });
+        const newEpisodes = yield loadEpisodes(currentPage);
+        renderEpisodes(newEpisodes);
+        setTimeout(() => {
+            if (window.innerWidth > 768) {
+                scrollToBottomSmoothly();
+            }
+            else {
+                const episodeContainer = document.getElementById('episodeList');
+                if (episodeContainer) {
+                    episodeContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }
+            }
+        }, 100);
+    }));
 }
 const headerVideo = document.getElementById('headerVideo');
 headerVideo.addEventListener('click', () => {
