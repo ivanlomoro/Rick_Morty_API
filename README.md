@@ -101,8 +101,13 @@ We've implemented pagination using API-provided pagination information to naviga
 
 ## Preview
 
-<img src="./assets/preview/desktopVersion.gif" alt="Desktop Version" width="400"/>
-<img src="./assets/preview/mobileVersion.gif" alt="Mobile Version" width="300"/>
+<table>
+  <tr>
+    <td><img src="./assets/preview/desktopVersion.gif" alt="Desktop Version" width="400"/></td>
+    <td><img src="./assets/preview/mobileVersion.gif" alt="Mobile Version" width="400"/></td>
+  </tr>
+</table>
+
 
 
 
