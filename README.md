@@ -99,9 +99,10 @@ We've implemented pagination using API-provided pagination information to naviga
 
    This will automatically open a new tab in your web browser, displaying a live preview of the project. Any changes you make to the files will be reflected in real-time in the browser.
 
-   ## Preview
+## Preview
 
-![Desktop Version](./assets/preview/desktopVersion.gif)
-![Mobile Version](./assets/preview/mobileVersion.gif)
+<img src="./assets/preview/desktopVersion.gif" alt="Desktop Version" width="400"/>
+<img src="./assets/preview/mobileVersion.gif" alt="Mobile Version" width="300"/>
+
 
 
