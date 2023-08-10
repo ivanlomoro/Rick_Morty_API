@@ -1,51 +1,24 @@
-import { Episode, Character, Location } from './types/interfaces';
+import { Episode, Character} from '../types/interfaces';
+import * as Api from '../api/index';
 declare var bootstrap: any;
-const API_URL = 'https://rickandmortyapi.com/api/episode';
 let currentPage = 1;
 
-async function loadEpisodes(page: number): Promise<{episodes: Episode[], totalPages: number}> {
-    const response = await fetch(`${API_URL}?page=${page}`);
-    const data = await response.json();
-    return {
-        episodes: data.results as Episode[],
-        totalPages: data.info.pages
-    };
-}
 
-async function loadCharacter(url: string): Promise<Character> {
-    const response = await fetch(url);
-    const data = await response.json();
-    return data as Character;
-}
-
-async function loadLocation(url: string): Promise<Location> {
-    const response = await fetch(url);
-    const data = await response.json();
-    return data as Location;
-}
-
-async function loadEpisodeByUrl(url: string): Promise<Episode> {
-    const response = await fetch(url);
-    const data = await response.json();
-    return data as Episode;
-}
-
-
-function scrollToTopSmoothly(): void {
+export function scrollToTopSmoothly(): void {
     window.scrollTo({
         top: 0,
         behavior: 'smooth'
     });
 }
 
-function scrollToBottomSmoothly(): void {
+export function scrollToBottomSmoothly(): void {
     window.scrollTo({
         top: document.body.scrollHeight,
         behavior: 'smooth'
     });
 }
 
-function createSeasonDiv(seasonNumber: string): HTMLDivElement {
+export function createSeasonDiv(seasonNumber: string): HTMLDivElement {
     const seasonDiv = document.createElement('div');
     const seasonTitle = document.createElement('h3');
     seasonDiv.classList.add('mb-3');
@@ -54,7 +27,7 @@ function createSeasonDiv(seasonNumber: string): HTMLDivElement {
     return seasonDiv;
 }
 
-function addEpisodeToList(seasonDiv: HTMLDivElement, episode: Episode): void {
+export function addEpisodeToList(seasonDiv: HTMLDivElement, episode: Episode): void {
     const listItem = document.createElement('li');
     listItem.classList.add('list-group-item');
     listItem.textContent = `${episode.episode} - ${episode.name}`;
@@ -62,7 +35,7 @@ function addEpisodeToList(seasonDiv: HTMLDivElement, episode: Episode): void {
     seasonDiv.appendChild(listItem);
 }
 
-function renderEpisodes(episodes: Episode[]): void {
+export function renderEpisodes(episodes: Episode[]): void {
     const episodesBySeason: { [season: string]: Episode[] } = {};
 
     
@@ -92,7 +65,7 @@ function renderEpisodes(episodes: Episode[]): void {
     });
 }
 
-async function renderEpisodeDetail(episode: Episode, characterPage: number = 1): Promise<void> {
+export async function renderEpisodeDetail(episode: Episode, characterPage: number = 1): Promise<void> {
     const mainContent = document.getElementById('mainContent');
     const charactersPerPage = 8;
     const totalPages = Math.ceil(episode.characters.length / charactersPerPage);
@@ -132,7 +105,7 @@ async function renderEpisodeDetail(episode: Episode, characterPage: number = 1):
         const characterSlice = episode.characters.slice(start, end);
 
         for (let characterUrl of characterSlice) {
-            const character = await loadCharacter(characterUrl);
+            const character = await Api.loadCharacter(characterUrl);
             createCharacterCard(character, rowDiv);
         }
 
@@ -160,7 +133,6 @@ async function renderEpisodeDetail(episode: Episode, characterPage: number = 1):
             paginationContainer.appendChild(loadMoreCharactersButton);
         }
 
-        // Indicador de página
         const pageIndicator = document.createElement('span');
         pageIndicator.className = 'mx-3 mb-3';
         pageIndicator.textContent = `${characterPage} / ${totalPages}`;
@@ -178,14 +150,14 @@ async function renderEpisodeDetail(episode: Episode, characterPage: number = 1):
 }
 
 
-async function showEpisodesModal(character: Character): Promise<void> {
+export async function showEpisodesModal(character: Character): Promise<void> {
     const episodesList = document.getElementById('episodesList');
 
     if (episodesList) {
         episodesList.textContent = '';
 
         for (const episodeUrl of character.episode) {
-            const episode = await loadEpisodeByUrl(episodeUrl);
+            const episode = await Api.loadEpisodeByUrl(episodeUrl);
             const li = document.createElement('li');
             const a = document.createElement('a');
             a.href = '#';
@@ -193,7 +165,7 @@ async function showEpisodesModal(character: Character): Promise<void> {
             a.addEventListener('click', (e) => {
                 e.preventDefault();
                 hideModal('episodesModal');
-                renderEpisodeDetail(episode); // Renderiza el detalle del episodio
+                renderEpisodeDetail(episode); 
             });
             li.appendChild(a);
             episodesList.appendChild(li);
@@ -204,7 +176,7 @@ async function showEpisodesModal(character: Character): Promise<void> {
 }
 
 
-function createCharacterCard(character: Character, parentDiv: HTMLElement): void {
+export function createCharacterCard(character: Character, parentDiv: HTMLElement): void {
     const characterDiv = document.createElement('div');
     characterDiv.className = 'character-card col-12 col-sm-6 col-md-4 col-lg-3 mb-3';
 
@@ -256,20 +228,20 @@ function createCharacterCard(character: Character, parentDiv: HTMLElement): void
 }
 
 
-function showModal(id: string): void {
+export function showModal(id: string): void {
     const modal = new bootstrap.Modal(document.getElementById(id), {
         keyboard: false
     });
     modal.show();
 }
 
-function hideModal(id: string): void {
+export function hideModal(id: string): void {
     const modal = bootstrap.Modal.getInstance(document.getElementById(id));
     modal.hide();
 }
 
 
-function showCharacterDetailsModal(character: Character, showLocationButton: boolean = true): void {
+export function showCharacterDetailsModal(character: Character, showLocationButton: boolean = true): void {
     const modalBody = document.getElementById('characterModalBody');
 
     if (modalBody) {
@@ -328,10 +300,10 @@ document.querySelector('#characterModal .btn-close')?.addEventListener('click', 
 });
 
 
-async function renderLocation(url: string): Promise<void> {
+export async function renderLocation(url: string): Promise<void> {
     const mainContent = document.getElementById('mainContent');
     if (mainContent) {
-        const location = await loadLocation(url);
+        const location = await Api.loadLocation(url);
         mainContent.textContent = '';
 
         const header = document.createElement('h2');
@@ -355,13 +327,13 @@ async function renderLocation(url: string): Promise<void> {
         mainContent.appendChild(residentsList);
 
         location.residents.forEach(async residentUrl => {
-            const resident = await loadCharacter(residentUrl);
+            const resident = await Api.loadCharacter(residentUrl);
             const li = document.createElement('li');
             const a = document.createElement('a');
             a.href = '#';
             a.textContent = resident.name;
             a.addEventListener('click', (e) => {
-                e.preventDefault(); // Prevent the link from following the href
+                e.preventDefault(); 
                 showCharacterDetailsModal(resident, false);
             });
             li.appendChild(a);
@@ -371,40 +343,34 @@ async function renderLocation(url: string): Promise<void> {
     }
 }
 
+export function setupLoadMoreButton() {
+    const loadMoreButton = document.getElementById('loadMoreButton');
+    if (loadMoreButton) {
+        loadMoreButton.addEventListener('click', async () => {
+            currentPage++;
+            const { episodes: newEpisodes, totalPages } = await Api.loadEpisodes(currentPage);
+            renderEpisodes(newEpisodes);
 
-const loadMoreButton = document.getElementById('loadMoreButton');
-if (loadMoreButton) {
-    loadMoreButton.addEventListener('click', async () => {
-        currentPage++;
-        const {episodes: newEpisodes, totalPages} = await loadEpisodes(currentPage);
-        renderEpisodes(newEpisodes);
+            if (currentPage >= totalPages) {
+                loadMoreButton.style.display = 'none';
+            }
 
-        // Hide the "Load More" button if there are no more pages to load
-        if (currentPage >= totalPages) {
-            loadMoreButton.style.display = 'none';
-        }
-
-        setTimeout(() => {
             if (window.innerWidth > 768) {
-                scrollToBottomSmoothly(); 
+                scrollToBottomSmoothly();
             } else {
-                const episodeContainer = document.getElementById('episodeList'); 
+                const episodeContainer = document.getElementById('episodeList');
                 if (episodeContainer) {
-                    episodeContainer.scrollIntoView({ behavior: 'smooth', block: 'end' }); 
+                    episodeContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
                 }
             }
-        }, 100); 
-    });
+        });
+    }
 }
 
-
-
-const headerVideo = document.getElementById('headerVideo') as HTMLVideoElement;
-
-headerVideo.addEventListener('click', () => {
-    window.location.href = 'index.html';
-});
-
-
-// load initial set of episodes
-loadEpisodes(currentPage).then(({episodes}) => renderEpisodes(episodes));
+  
+  export function setupHeaderVideo() {
+    const headerVideo = document.getElementById('headerVideo') as HTMLVideoElement;
+    headerVideo.addEventListener('click', () => {
+        window.location.href = 'index.html';
+    });
+  }
