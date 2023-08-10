@@ -8,12 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var _a;
+const API_URL = 'https://rickandmortyapi.com/api/episode';
 let currentPage = 1;
 function loadEpisodes(page) {
     return __awaiter(this, void 0, void 0, function* () {
-        const response = yield fetch(`https://rickandmortyapi.com/api/episode?page=${page}`);
+        const response = yield fetch(`${API_URL}?page=${page}`);
         const data = yield response.json();
-        return data.results;
+        return {
+            episodes: data.results,
+            totalPages: data.info.pages
+        };
     });
 }
 function loadCharacter(url) {
@@ -317,8 +321,11 @@ const loadMoreButton = document.getElementById('loadMoreButton');
 if (loadMoreButton) {
     loadMoreButton.addEventListener('click', () => __awaiter(void 0, void 0, void 0, function* () {
         currentPage++;
-        const newEpisodes = yield loadEpisodes(currentPage);
+        const { episodes: newEpisodes, totalPages } = yield loadEpisodes(currentPage);
         renderEpisodes(newEpisodes);
+        if (currentPage >= totalPages) {
+            loadMoreButton.style.display = 'none';
+        }
         setTimeout(() => {
             if (window.innerWidth > 768) {
                 scrollToBottomSmoothly();
@@ -336,6 +343,6 @@ const headerVideo = document.getElementById('headerVideo');
 headerVideo.addEventListener('click', () => {
     window.location.href = 'index.html';
 });
-loadEpisodes(currentPage).then(renderEpisodes);
+loadEpisodes(currentPage).then(({ episodes }) => renderEpisodes(episodes));
 export {};
 //# sourceMappingURL=index.js.map

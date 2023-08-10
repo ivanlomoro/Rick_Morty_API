@@ -1,12 +1,15 @@
 import { Episode, Character, Location } from './types/interfaces';
 declare var bootstrap: any;
-
+const API_URL = 'https://rickandmortyapi.com/api/episode';
 let currentPage = 1;
 
-async function loadEpisodes(page: number): Promise<Episode[]> {
-    const response = await fetch(`https://rickandmortyapi.com/api/episode?page=${page}`);
+async function loadEpisodes(page: number): Promise<{episodes: Episode[], totalPages: number}> {
+    const response = await fetch(`${API_URL}?page=${page}`);
     const data = await response.json();
-    return data.results as Episode[];
+    return {
+        episodes: data.results as Episode[],
+        totalPages: data.info.pages
+    };
 }
 
 async function loadCharacter(url: string): Promise<Character> {
@@ -373,8 +376,13 @@ const loadMoreButton = document.getElementById('loadMoreButton');
 if (loadMoreButton) {
     loadMoreButton.addEventListener('click', async () => {
         currentPage++;
-        const newEpisodes = await loadEpisodes(currentPage);
+        const {episodes: newEpisodes, totalPages} = await loadEpisodes(currentPage);
         renderEpisodes(newEpisodes);
+
+        // Hide the "Load More" button if there are no more pages to load
+        if (currentPage >= totalPages) {
+            loadMoreButton.style.display = 'none';
+        }
 
         setTimeout(() => {
             if (window.innerWidth > 768) {
@@ -399,4 +407,4 @@ headerVideo.addEventListener('click', () => {
 
 
 // load initial set of episodes
-loadEpisodes(currentPage).then(renderEpisodes);
+loadEpisodes(currentPage).then(({episodes}) => renderEpisodes(episodes));
