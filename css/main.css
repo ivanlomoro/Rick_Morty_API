@@ -1,3 +1,9 @@
+:root {
+    --border-color: #8BDC98;
+    --hover-bg-color: #afafaf;
+    --hover-text-color: rgb(255, 255, 255);
+}
+
 #mainContent {
     background: url('../assets/fondo.jpg') no-repeat center center fixed;
     background-size: cover;
@@ -16,7 +22,7 @@
 
 .card {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(1.25rem);
     animation: load 1s ease-out forwards;
     cursor: pointer;
 }
@@ -25,33 +31,32 @@
     cursor: pointer;
     position: relative;
     transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-    border: 1px solid #8BDC98;
-    letter-spacing: 2px;
-    font-size: 16px;
+    border: 1px solid var(--border-color);
+    letter-spacing: 0.125rem;
+    font-size: 1rem;
 }
 
 .list-group-item:hover {
-    background-color: #afafaf;
-    color: rgb(255, 255, 255);
+    background-color: var(--hover-bg-color);
+    color: var(--hover-text-color);
     animation: bounce 0.5s ease infinite;
 }
 
 @keyframes bounce {
-
     0%,
     100% {
         transform: translateY(0);
     }
 
     50% {
-        transform: translateY(-5px);
+        transform: translateY(-0.3125rem);
     }
 }
 
 @keyframes load {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(1.25rem);
     }
 
     to {
