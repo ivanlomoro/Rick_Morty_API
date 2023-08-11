@@ -1,3 +1,5 @@
+<img src="./assets/Rick-and-Morty-tittle.png" alt="tittle pag"/>
+
 # Rick and Morty Website
 
 ## Introduction
